@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { AnimatedTitleWord } from '../ui/AnimatedTitleWord';
 
 interface SplitLayoutProps {
@@ -25,11 +26,15 @@ export function SplitLayout({ children }: SplitLayoutProps) {
         </div>
 
         {/* Top Logo */}
-        <div className="flex items-center gap-2 z-10">
-          <div className="text-white font-black text-2xl tracking-tighter flex items-center">
-            Dev <span className="w-1.5 h-1.5 bg-[#00C652] rounded-full ml-1 mb-3 inline-block"></span>
-          </div>
-          <span className="font-bold text-lg text-white">Community</span>
+        <div className="flex items-center gap-3 z-10 px-4 py-3">
+          <Image 
+            src="/dcLogo.webp" 
+            alt="Dev Community Logo" 
+            width={40} 
+            height={40}
+            className="object-contain"
+          />
+          <div className="font-black text-xl tracking-tight">Dev Community - KGEC</div>
         </div>
 
         {/* Center Content Wrapper */}
