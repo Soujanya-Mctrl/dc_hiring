@@ -7,6 +7,8 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     console.log('🚀 [SUBMIT API] Request received');
+    console.log('📋 Full request body structure:');
+    console.log(JSON.stringify(body, null, 2));
     
     // Check environment variables FIRST
     console.log('🔐 [SUBMIT API] Checking environment variables...');
@@ -55,72 +57,94 @@ export async function POST(request: Request) {
     console.log('✅ JWT auth initialized');
 
     // 2. Initialize the document
-    console.log('📄 Initializing Google Spreadsheet...');
+    console.log('📄 Initializing Google Spreadsheet with ID:', process.env.GOOGLE_SHEET_ID);
     const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEET_ID!, serviceAccountAuth);
     
     // 3. Load doc info
     await doc.loadInfo();
+    console.log('📄 Spreadsheet loaded. Title:', doc.title);
+    console.log('📄 Total sheets in this spreadsheet:', doc.sheetsByIndex.length);
+    doc.sheetsByIndex.forEach((s: any, idx: number) => {
+      console.log(`  Sheet ${idx}: "${s.title}" (${s.rowCount} rows)`);
+    });
     
-    // 4. Get the first sheet
+    // 4. Get the first sheet or create one if it does not exist yet
     let sheet = doc.sheetsByIndex[0];
-    console.log('📊 Sheet found. Row count:', sheet.rowCount);
-    
-    // 5. Load header row first (required before accessing headerValues)
-    await sheet.loadHeaderRow();
-    console.log('📊 Current headers:', sheet.headerValues);
-    
-    // 6. Set up headers if they don't exist
+    if (!sheet) {
+      console.warn('⚠️ No worksheet found, creating Responses sheet...');
+      sheet = await doc.addSheet({ title: 'Responses' });
+      console.log('✅ Worksheet created');
+      await doc.loadInfo();
+    }
+    console.log('📊 Using sheet:', sheet.title);
+    console.log('📊 Sheet ID:', sheet.sheetId);
+    console.log('📊 Current row count:', sheet.rowCount);
+
+    // 5. Set up headers if they don't exist yet
     const headerRow = [
-        'Timestamp',
-        'Full Name',
-        'Email',
-        'Country',
-        'City',
-        'Discord',
-        'Twitter',
-        'Interests',
-        'Familiarity Level',
-        'What Excites You',
-        'Why Join',
-        'Something Proud Of',
-        'Project Link',
-        'Time Commitment',
+        'fullName',
+        'email',
+        'country',
+        'city',
+        'discord',
+        'twitter',
+        'interests',
+        'familiarity',
+        'excites',
+        'whyJoin',
+        'proud',
+        'timeCommit',
     ];
     
-    // Check if headers are empty - if so, set them
-    if (!sheet.headerValues || sheet.headerValues.length === 0) {
-        console.log('📝 No headers found, setting headers now...');
+    let headersLoaded = false;
+
+    try {
+      await sheet.loadHeaderRow();
+      headersLoaded = true;
+      console.log('📊 Current headers:', sheet.headerValues);
+    } catch (headerError: any) {
+      console.warn('⚠️ Header row not loaded yet:', headerError.message);
+    }
+
+    if (!headersLoaded || !sheet.headerValues || sheet.headerValues.length === 0) {
+      console.log('📝 No headers found, setting headers now...');
         await sheet.setHeaderRow(headerRow);
         console.log('✅ Headers set successfully');
         // Reload after setting headers
         await sheet.loadHeaderRow();
+      console.log('📊 Reloaded headers:', sheet.headerValues);
     } else {
         console.log('✅ Headers already exist');
     }
-    
+
     console.log('📊 Final headers:', sheet.headerValues);
     
     // 7. Prepare and append the row with all fields
     const newRow = {
-        'Timestamp': new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
-        'Full Name': body.fullName || '',
-        'Email': body.email || '',
-        'Country': body.country || '',
-        'City': body.city || '',
-        'Discord': body.discord || '',
-        'Twitter': body.twitter || '',
-        'Interests': body.interests ? body.interests.join(', ') : '',
-        'Familiarity Level': body.experience?.familiarity || '',
-        'What Excites You': body.experience?.excites || '',
-        'Why Join': body.experience?.whyJoin || '',
-        'Something Proud Of': body.contribution?.proud || '',
-        'Project Link': body.contribution?.link || '',
-        'Time Commitment': body.contribution?.timeCommit || '',
+        'fullName': body.fullName || '',
+        'email': body.email || '',
+        'country': body.country || '',
+        'city': body.city || '',
+        'discord': body.discord || '',
+        'twitter': body.twitter || '',
+        'interests': body.interests ? body.interests.join(', ') : '',
+        'familiarity': body.experience?.familiarity || '',
+        'excites': body.experience?.excites || '',
+        'whyJoin': body.experience?.whyJoin || '',
+        'proud': body.contribution?.proud || '',
+        'timeCommit': body.contribution?.timeCommit || '',
     };
 
     console.log('📤 Adding row with data:', Object.keys(newRow));
-    await sheet.addRow(newRow);
-    console.log('✅ Row added successfully');
+    console.log('📤 Row data:', newRow);
+    
+    // addRow is the correct method in google-spreadsheet. If insert: true is needed, we can try it.
+    const addedRow = await sheet.addRow(newRow);
+    console.log(`✅ Row added successfully to row index: ${addedRow.rowNumber}`);
+    
+    // Read back the last few rows to verify where the data went
+    const rows = await sheet.getRows({ limit: 5, offset: Math.max(0, addedRow.rowNumber - 5) });
+    console.log('🔄 Data verification - recent rows content:', rows.map(r => r.toObject()));
 
     // 8. Send confirmation email
     if (body.email) {
