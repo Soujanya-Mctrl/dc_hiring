@@ -17,10 +17,10 @@ export function SplitLayout({ children }: SplitLayoutProps) {
           <div 
             className="absolute inset-0" 
             style={{
-              backgroundImage: 'radial-gradient(#00C652 1px, transparent 1px)',
+              backgroundImage: 'radial-gradient(#00C652 1.5px, transparent 2px)',
               backgroundSize: '24px 24px',
-              maskImage: 'radial-gradient(circle at 80% 50%, black 10%, transparent 60%)',
-              WebkitMaskImage: 'radial-gradient(circle at 80% 50%, black 10%, transparent 60%)'
+              maskImage: 'radial-gradient(circle at 80% 50%, black 10%, transparent 80%)',
+              WebkitMaskImage: 'radial-gradient(circle at 80% 50%, black 10%, transparent 80%)'
             }}
           />
         </div>
