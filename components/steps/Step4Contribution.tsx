@@ -10,8 +10,71 @@ const timeCommitmentList = [
   { id: 'allin', title: 'I\'m all in', description: '10+ hrs/week' },
 ];
 
-export function Step4Contribution() {
-  const [time, setTime] = useState<string>('');
+// URL validation
+const validateUrl = (url: string): boolean => {
+  try {
+    new URL(url);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+interface Step4ContributionProps {
+  contribution: {
+    proud: string;
+    timeCommit: string;
+  };
+  setContribution: (contribution: any) => void;
+  onValidate?: (isValid: boolean) => void;
+}
+
+export function Step4Contribution({ contribution, setContribution, onValidate }: Step4ContributionProps) {
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const handleChange = (field: string, value: string) => {
+    setContribution((prev: any) => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: '' }));
+    }
+  };
+
+  const isValidUrl = (str: string): boolean => {
+    if (!str.trim()) return false;
+    // Check if it's a URL or just text
+    if (str.startsWith('http://') || str.startsWith('https://')) {
+      return validateUrl(str);
+    }
+    // If it looks like a URL but doesn't have protocol, check if it's valid with https
+    if (str.includes('.') && !str.includes(' ')) {
+      return validateUrl(`https://${str}`);
+    }
+    return true; // Accept as description
+  };
+
+  const validate = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!contribution.proud.trim()) {
+      newErrors.proud = 'This field is required';
+    } else if (!isValidUrl(contribution.proud)) {
+      newErrors.proud = 'Please enter a valid link or description';
+    }
+
+    if (!contribution.timeCommit) {
+      newErrors.timeCommit = 'Please select a time commitment';
+    }
+
+    setErrors(newErrors);
+    const isValid = Object.keys(newErrors).length === 0;
+    onValidate?.(isValid);
+    return isValid;
+  };
+
+  React.useEffect(() => {
+    (window as any).__step4Validate = validate;
+  }, [contribution, errors]);
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -21,33 +84,37 @@ export function Step4Contribution() {
       </div>
 
       <div className="bg-[#141414] border border-[#262626] rounded-3xl p-8 shadow-xl shadow-black/50 flex flex-col gap-10">
-        
+
         <div>
-          <SectionHeader 
-            title="Share something you're proud of" 
+          <SectionHeader
+            title="Share something you're proud of"
             subtitle="A blog post, side project, event, design, community — paste a link or just describe it."
           />
-          <Textarea 
+          <Textarea
             label="Link or description"
             isRequired
             placeholder="Paste a link, or tell us about something you're proud of..."
+            value={contribution.proud}
+            onChange={(e) => handleChange('proud', (e.target as HTMLTextAreaElement).value)}
+            error={errors.proud}
             className="min-h-[150px]"
           />
         </div>
 
         <div>
-          <SectionHeader 
-            title="Time you can commit" 
+          <SectionHeader
+            title="Time you can commit"
             subtitle="Be honest — there's room for every level."
           />
+          {errors.timeCommit && <div className="mb-3 p-2 bg-red-500/10 border border-red-500 rounded text-red-500 text-xs">{errors.timeCommit}</div>}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {timeCommitmentList.map((item) => (
               <SelectCard
                 key={item.id}
                 title={item.title}
                 description={item.description}
-                selected={time === item.id}
-                onClick={() => setTime(item.id)}
+                selected={contribution.timeCommit === item.id}
+                onClick={() => handleChange('timeCommit', item.id)}
                 type="radio"
               />
             ))}
@@ -56,7 +123,7 @@ export function Step4Contribution() {
 
         <div>
           <SectionHeader title="Did somebody from Team1 refer you?" />
-          <Input 
+          <Input
             label="Referrer name or handle (optional)"
             placeholder="e.g. @johndoe"
           />

@@ -4,10 +4,11 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
   icon?: ReactNode;
   isRequired?: boolean;
+  error?: string;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, icon, isRequired, className = '', ...props }, ref) => {
+  ({ label, icon, isRequired, error, className = '', ...props }, ref) => {
     return (
       <div className="flex flex-col gap-2 w-full">
         <label className="text-sm font-bold text-white">
@@ -21,12 +22,12 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           )}
           <input
             ref={ref}
-            className={`w-full bg-[#1A1A1A] border border-[#262626] rounded-xl px-4 py-3.5 text-white placeholder:text-[#737373] focus:outline-none focus:border-[#00C652] transition-colors ${
-              icon ? 'pl-11' : ''
-            } ${className}`}
+            className={`w-full bg-[#1A1A1A] border rounded-xl px-4 py-3.5 text-white placeholder:text-[#737373] focus:outline-none transition-colors ${icon ? 'pl-11' : ''
+              } ${error ? 'border-red-500 focus:border-red-500' : 'border-[#262626] focus:border-[#00C652]'} ${className}`}
             {...props}
           />
         </div>
+        {error && <span className="text-xs text-red-500 mt-1">{error}</span>}
       </div>
     );
   }
@@ -39,10 +40,11 @@ interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement
   isRequired?: boolean;
   minChars?: number;
   currentChars?: number;
+  error?: string;
 }
 
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ label, isRequired, minChars, currentChars, className = '', ...props }, ref) => {
+  ({ label, isRequired, minChars, currentChars, error, className = '', ...props }, ref) => {
     return (
       <div className="flex flex-col gap-2 w-full">
         {label && (
@@ -53,16 +55,16 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
         <div className="relative">
           <textarea
             ref={ref}
-            className={`w-full bg-[#1A1A1A] border border-[#262626] rounded-xl px-4 py-3.5 text-white placeholder:text-[#737373] focus:outline-none focus:border-[#00C652] transition-colors resize-y min-h-[120px] ${className}`}
+            className={`w-full bg-[#1A1A1A] border rounded-xl px-4 py-3.5 text-white placeholder:text-[#737373] focus:outline-none transition-colors resize-y min-h-[120px] ${error ? 'border-red-500 focus:border-red-500' : 'border-[#262626] focus:border-[#00C652]'} ${className}`}
             {...props}
           />
           {minChars !== undefined && (
-            <div className={`text-right text-xs mt-1 font-semibold ${
-              currentChars && currentChars >= minChars ? 'text-[#00C652]' : 'text-[#737373]'
-            }`}>
+            <div className={`text-right text-xs mt-1 font-semibold ${currentChars && currentChars >= minChars ? 'text-[#00C652]' : 'text-[#737373]'
+              }`}>
               {currentChars || 0} / {minChars} characters min
             </div>
           )}
+          {error && <span className="text-xs text-red-500 mt-1">{error}</span>}
         </div>
       </div>
     );
