@@ -47,6 +47,15 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+
+    // Resume required
+    if (!body.resumeFilename || !body.resumeBase64) {
+      console.warn('❌ Validation failed: Missing resume');
+      return NextResponse.json(
+        { error: 'Missing required field: resume (resumeFilename and resumeBase64)' },
+        { status: 400 }
+      );
+    }
     
     console.log('✅ Basic validation passed');
     

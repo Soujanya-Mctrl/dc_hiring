@@ -119,6 +119,12 @@ export function Step1About({ formData, setFormData, onValidate }: Step1AboutProp
       newErrors.github = 'Please enter a valid GitHub profile URL';
     }
 
+    // Resume is required
+    if (!formData.resumeFilename || !formData.resumeBase64) {
+      newErrors.resume = 'Please upload your resume (PDF)';
+      setResumeError('Please upload your resume (PDF)');
+    }
+
     setErrors(newErrors);
     const isValid = Object.keys(newErrors).length === 0;
     onValidate?.(isValid);
@@ -241,12 +247,12 @@ export function Step1About({ formData, setFormData, onValidate }: Step1AboutProp
 
         {/* Resume upload */}
         <div className="mt-6">
-          <label className="text-sm font-bold text-white block mb-2">Upload resume (PDF, max 3 MB)</label>
+          <label className="text-sm font-bold text-white block mb-2">Upload resume (PDF, max 3 MB) <span className="text-[#00C652]">*</span></label>
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => (fileInputRef.current && fileInputRef.current.click())}
-              className="px-4 py-2 rounded-lg bg-[#1A1A1A] border border-[#262626] text-sm text-white hover:border-[#00C652] transition-colors"
+              className={`px-4 py-2 rounded-lg bg-[#1A1A1A] text-sm text-white hover:border-[#00C652] transition-colors ${resumeError ? 'border-red-500' : 'border-[#262626]'}`}
             >
               Choose file
             </button>
