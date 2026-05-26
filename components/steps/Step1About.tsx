@@ -10,6 +10,8 @@ interface Step1AboutProps {
     city: string;
     twitter: string;
     discord: string;
+    linkedin: string;
+    github: string;
   };
   setFormData: (data: any) => void;
   onValidate?: (isValid: boolean) => void;
@@ -70,6 +72,18 @@ export function Step1About({ formData, setFormData, onValidate }: Step1AboutProp
       newErrors.twitter = 'Twitter handle is required';
     } else if (!validateTwitterHandle(formData.twitter)) {
       newErrors.twitter = 'Please enter a valid Twitter handle (e.g., @username)';
+    }
+
+    if (!formData.linkedin.trim()) {
+      newErrors.linkedin = 'LinkedIn profile is required';
+    } else if (!validateTwitterHandle(formData.linkedin)) {
+      newErrors.linkedin = 'Please enter a valid LinkedIn profile URL';
+    }
+
+    if (!formData.github.trim()) {
+      newErrors.github = 'GitHub profile is required';
+    } else if (!validateTwitterHandle(formData.github)) {
+      newErrors.github = 'Please enter a valid GitHub profile URL';
     }
 
     setErrors(newErrors);
@@ -155,6 +169,24 @@ export function Step1About({ formData, setFormData, onValidate }: Step1AboutProp
             value={formData.twitter}
             onChange={(e) => handleChange('twitter', (e.target as HTMLInputElement).value)}
             error={errors.twitter}
+            icon={<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4l11.733 16h4.267l-11.733 -16z" /><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772" /></svg>}
+          />
+          <Input
+            label="LinkedIn"
+            isRequired
+            placeholder="https://linkedin.com/in/username"
+            value={formData.linkedin}
+            onChange={(e) => handleChange('linkedin', (e.target as HTMLInputElement).value)}
+            error={errors.linkedin}
+            icon={<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4l11.733 16h4.267l-11.733 -16z" /><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772" /></svg>}
+          />
+          <Input
+            label="GitHub"
+            isRequired
+            placeholder="https://github.com/username"   
+            value={formData.github}
+            onChange={(e) => handleChange('github', (e.target as HTMLInputElement).value)}
+            error={errors.github}
             icon={<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4l11.733 16h4.267l-11.733 -16z" /><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772" /></svg>}
           />
         </div>
