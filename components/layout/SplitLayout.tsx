@@ -1,6 +1,5 @@
 import React from 'react';
 import Image from 'next/image';
-import Image from 'next/image';
 import { AnimatedTitleWord } from '../ui/AnimatedTitleWord';
 
 interface SplitLayoutProps {
