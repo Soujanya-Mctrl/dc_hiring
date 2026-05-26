@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Input } from '../ui/Input';
 import { SectionHeader } from '../ui/SectionHeader';
 
@@ -36,6 +36,8 @@ const validateDiscordHandle = (discord: string): boolean => {
 
 export function Step1About({ formData, setFormData, onValidate }: Step1AboutProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [resumeError, setResumeError] = useState('');
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev: any) => ({ ...prev, [field]: value }));
@@ -43,6 +45,33 @@ export function Step1About({ formData, setFormData, onValidate }: Step1AboutProp
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: '' }));
     }
+  };
+
+  const handleResumeFile = (file?: File) => {
+    setResumeError('');
+    if (!file) {
+      setFormData((prev: any) => ({ ...prev, resumeFilename: '', resumeBase64: '' }));
+      return;
+    }
+
+    if (file.type !== 'application/pdf') {
+      setResumeError('Only PDF files are accepted');
+      return;
+    }
+
+    const maxSize = 3 * 1024 * 1024; // 3 MB
+    if (file.size > maxSize) {
+      setResumeError('File is too large (max 3 MB)');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      const base64 = result.split(',')[1] || '';
+      setFormData((prev: any) => ({ ...prev, resumeFilename: file.name, resumeBase64: base64 }));
+    };
+    reader.readAsDataURL(file);
   };
 
   const validate = () => {
@@ -208,6 +237,31 @@ export function Step1About({ formData, setFormData, onValidate }: Step1AboutProp
             error={errors.github}
             icon={<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4l11.733 16h4.267l-11.733 -16z" /><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772" /></svg>}
           />
+        </div>
+
+        {/* Resume upload */}
+        <div className="mt-6">
+          <label className="text-sm font-bold text-white block mb-2">Upload resume (PDF, max 3 MB)</label>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => (fileInputRef.current && fileInputRef.current.click())}
+              className="px-4 py-2 rounded-lg bg-[#1A1A1A] border border-[#262626] text-sm text-white hover:border-[#00C652] transition-colors"
+            >
+              Choose file
+            </button>
+            <span className="text-sm text-[#A3A3A3]">{formData.resumeFilename || 'No file chosen'}</span>
+          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="application/pdf"
+            onChange={(e) => handleResumeFile(e.target.files ? e.target.files[0] : undefined)}
+            className="hidden"
+          />
+          {resumeError && (
+            <div className="mt-2 text-xs text-red-500">{resumeError}</div>
+          )}
         </div>
 
       </div>

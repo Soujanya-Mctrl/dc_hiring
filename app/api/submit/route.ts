@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { GoogleSpreadsheet } from 'google-spreadsheet';
 import { JWT } from 'google-auth-library';
 import nodemailer from 'nodemailer';
+import { google } from 'googleapis';
+import { Readable } from 'stream';
 
 export async function POST(request: Request) {
   try {
@@ -55,6 +57,8 @@ export async function POST(request: Request) {
       key: process.env.GOOGLE_PRIVATE_KEY!.replace(/\\n/g, '\n'),
       scopes: [
         'https://www.googleapis.com/auth/spreadsheets',
+        'https://www.googleapis.com/auth/drive.file',
+        'https://www.googleapis.com/auth/drive.metadata',
       ],
     });
     console.log('✅ JWT auth initialized');
@@ -94,6 +98,9 @@ export async function POST(request: Request) {
         'interests',
         'otherInterest',
         'developmentSelections',
+        'resumeFilename',
+        'resumeFileId',
+        'resumeLink',
         'familiarity',
         'excites',
         'whyJoin',
@@ -124,7 +131,45 @@ export async function POST(request: Request) {
 
     console.log('📊 Final headers:', sheet.headerValues);
     
-    // 7. Prepare and append the row with all fields
+    // 7. If a resume was provided, upload to Drive
+    let resumeFileId = '';
+    let resumeLink = '';
+
+    if (body.resumeBase64 && body.resumeFilename) {
+      try {
+        console.log('📁 Uploading resume to Drive...');
+        const driveAuth = new JWT({
+          email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL!,
+          key: process.env.GOOGLE_PRIVATE_KEY!.replace(/\\n/g, '\n'),
+          scopes: ['https://www.googleapis.com/auth/drive.file', 'https://www.googleapis.com/auth/drive.metadata'],
+        });
+
+        const drive = google.drive({ version: 'v3', auth: driveAuth as any });
+        const buffer = Buffer.from(body.resumeBase64, 'base64');
+
+        const media = {
+          mimeType: 'application/pdf',
+          body: Readable.from(buffer),
+        } as any;
+
+        const createRes = await drive.files.create({
+          requestBody: {
+            name: body.resumeFilename,
+            parents: process.env.DRIVE_FOLDER_ID ? [process.env.DRIVE_FOLDER_ID] : undefined,
+          },
+          media,
+          fields: 'id, name, webViewLink, webContentLink',
+        });
+
+        resumeFileId = createRes.data.id || '';
+        resumeLink = (createRes.data as any).webViewLink || (createRes.data as any).webContentLink || '';
+        console.log('✅ Resume uploaded to Drive:', resumeFileId, resumeLink);
+      } catch (driveError: any) {
+        console.warn('⚠️ Drive upload failed (continuing):', driveError.message);
+      }
+    }
+
+    // 8. Prepare and append the row with all fields
     const newRow = {
         'fullName': body.fullName || '',
         'email': body.email || '',
@@ -135,6 +180,9 @@ export async function POST(request: Request) {
         'interests': body.interests ? body.interests.join(', ') : '',
         'otherInterest': body.otherInterest || '',
         'developmentSelections': Array.isArray(body.developmentSelections) ? body.developmentSelections.join(', ') : '',
+        'resumeFilename': body.resumeFilename || '',
+        'resumeFileId': resumeFileId,
+        'resumeLink': resumeLink,
         'familiarity': body.experience?.familiarity || '',
         'excites': body.experience?.excites || '',
         'whyJoin': body.experience?.whyJoin || '',
@@ -173,6 +221,9 @@ export async function POST(request: Request) {
                 subject: 'Interview Confirmation',
                 text: 'Look forward to your interview and your slot will be sent in due time.',
                 html: '<p>Look forward to your interview and your slot will be sent in due time.</p>',
+                attachments: body.resumeBase64 && body.resumeFilename ? [
+                  { filename: body.resumeFilename, content: Buffer.from(body.resumeBase64, 'base64'), contentType: 'application/pdf' }
+                ] : undefined,
             });
             console.log('✅ Email sent successfully');
         } catch (emailError: any) {

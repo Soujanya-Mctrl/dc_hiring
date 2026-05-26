@@ -27,6 +27,9 @@ export default function Home() {
     discord: '',
     linkedin: '',
     github: '',
+    // Resume fields
+    resumeFilename: '',
+    resumeBase64: '',
   });
 
   const [interests, setInterests] = useState<string[]>([]);
@@ -62,6 +65,13 @@ export default function Home() {
         }
         if (parsed.experience) setExperience(parsed.experience);
         if (parsed.contribution) setContribution(parsed.contribution);
+        // Migration: ensure resume fields exist
+        if (parsed.formData && typeof parsed.formData.resumeFilename === 'string') {
+          setFormData((prev) => ({ ...prev, resumeFilename: parsed.formData.resumeFilename }));
+        }
+        if (parsed.formData && typeof parsed.formData.resumeBase64 === 'string') {
+          setFormData((prev) => ({ ...prev, resumeBase64: parsed.formData.resumeBase64 }));
+        }
       } catch (error) {
         console.warn('Failed to restore saved form state:', error);
       }
