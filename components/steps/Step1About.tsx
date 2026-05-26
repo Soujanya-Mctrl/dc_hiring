@@ -74,6 +74,12 @@ export function Step1About({ formData, setFormData, onValidate }: Step1AboutProp
     reader.readAsDataURL(file);
   };
 
+  const handleRemoveResume = () => {
+    setResumeError('');
+    setFormData((prev: any) => ({ ...prev, resumeFilename: '', resumeBase64: '' }));
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
   const validate = () => {
     const newErrors: Record<string, string> = {};
 
@@ -257,6 +263,15 @@ export function Step1About({ formData, setFormData, onValidate }: Step1AboutProp
               Choose file
             </button>
             <span className="text-sm text-[#A3A3A3]">{formData.resumeFilename || 'No file chosen'}</span>
+            {formData.resumeFilename && (
+              <button
+                type="button"
+                onClick={handleRemoveResume}
+                className="px-3 py-1 rounded-md bg-transparent border border-[#3a3a3a] text-sm text-[#A3A3A3] hover:border-red-500 hover:text-red-500 transition-colors"
+              >
+                Remove
+              </button>
+            )}
           </div>
           <input
             ref={fileInputRef}
