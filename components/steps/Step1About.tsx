@@ -6,8 +6,8 @@ interface Step1AboutProps {
   formData: {
     fullName: string;
     email: string;
-    country: string;
-    city: string;
+    location: string;
+    accommodation: string;
     twitter: string;
     discord: string;
     linkedin: string;
@@ -58,8 +58,12 @@ export function Step1About({ formData, setFormData, onValidate }: Step1AboutProp
       newErrors.email = 'Please enter a valid email format';
     }
 
-    if (!formData.country.trim()) {
-      newErrors.country = 'Country is required';
+    if (!formData.location.trim()) {
+      newErrors.location = 'Where you live is required';
+    }
+
+    if (!formData.accommodation.trim()) {
+      newErrors.accommodation = 'Accommodation type is required';
     }
 
     if (!formData.discord.trim()) {
@@ -134,20 +138,35 @@ export function Step1About({ formData, setFormData, onValidate }: Step1AboutProp
         <SectionHeader title="Location" />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
           <Input
-            label="Country"
+            label="Where do you live?"
             isRequired
-            placeholder="Select a country"
-            value={formData.country}
-            onChange={(e) => handleChange('country', (e.target as HTMLInputElement).value)}
-            error={errors.country}
+            placeholder="Your area or city"
+            value={formData.location}
+            onChange={(e) => handleChange('location', (e.target as HTMLInputElement).value)}
+            error={errors.location}
             icon={<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></svg>}
           />
-          <Input
-            label="City"
-            placeholder="Your city"
-            value={formData.city}
-            onChange={(e) => handleChange('city', (e.target as HTMLInputElement).value)}
-          />
+          <div className="flex flex-col gap-2 w-full">
+            <label className="text-sm font-bold text-white">
+              Accommodation <span className="text-[#00C652]">*</span>
+            </label>
+            <div className="relative">
+              <select
+                className={`w-full bg-[#1A1A1A] border rounded-xl px-4 py-3.5 focus:outline-none transition-colors ${formData.accommodation ? 'text-white' : 'text-[#737373]'} ${errors.accommodation ? 'border-red-500 focus:border-red-500' : 'border-[#262626] focus:border-[#00C652]'}`}
+                value={formData.accommodation}
+                onChange={(e) => handleChange('accommodation', e.target.value)}
+                required
+              >
+                <option value="" disabled>
+                  Select DP / Mess / Hostel
+                </option>
+                <option value="DP">DP</option>
+                <option value="Mess">Mess</option>
+                <option value="Hostel">Hostel</option>
+              </select>
+            </div>
+            {errors.accommodation && <span className="text-xs text-red-500 mt-1">{errors.accommodation}</span>}
+          </div>
         </div>
 
         {/* Socials */}

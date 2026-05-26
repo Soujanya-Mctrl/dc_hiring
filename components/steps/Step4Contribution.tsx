@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { SectionHeader } from '../ui/SectionHeader';
 import { SelectCard } from '../ui/SelectCard';
-import { Textarea, Input } from '../ui/Input';
+import { Textarea } from '../ui/Input';
 
 const timeCommitmentList = [
   { id: 'few', title: 'A few hours', description: '1–3 hrs/week' },
@@ -119,14 +119,6 @@ export function Step4Contribution({ contribution, setContribution, onValidate }:
               />
             ))}
           </div>
-        </div>
-
-        <div>
-          <SectionHeader title="Did somebody from Team1 refer you?" />
-          <Input
-            label="Referrer name or handle (optional)"
-            placeholder="e.g. @johndoe"
-          />
         </div>
 
       </div>

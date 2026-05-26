@@ -29,16 +29,19 @@ export async function POST(request: Request) {
     console.log('📝 Request data:', {
       fullName: body.fullName,
       email: body.email,
-      country: body.country,
+      location: body.location,
+      accommodation: body.accommodation,
       hasInterests: !!body.interests,
       interestCount: body.interests?.length,
+      otherInterest: body.otherInterest,
+      developmentSelections: body.developmentSelections,
     });
     
     // Validate required fields
-    if (!body.fullName || !body.email || !body.country) {
+    if (!body.fullName || !body.email || !body.location || !body.accommodation) {
       console.warn('❌ Validation failed: Missing required fields');
       return NextResponse.json(
-        { error: 'Missing required fields: fullName, email, country' },
+        { error: 'Missing required fields: fullName, email, location, accommodation' },
         { status: 400 }
       );
     }
@@ -84,11 +87,13 @@ export async function POST(request: Request) {
     const headerRow = [
         'fullName',
         'email',
-        'country',
-        'city',
+      'location',
+      'accommodation',
         'discord',
         'twitter',
         'interests',
+        'otherInterest',
+        'developmentSelections',
         'familiarity',
         'excites',
         'whyJoin',
@@ -123,11 +128,13 @@ export async function POST(request: Request) {
     const newRow = {
         'fullName': body.fullName || '',
         'email': body.email || '',
-        'country': body.country || '',
-        'city': body.city || '',
+      'location': body.location || '',
+      'accommodation': body.accommodation || '',
         'discord': body.discord || '',
         'twitter': body.twitter || '',
         'interests': body.interests ? body.interests.join(', ') : '',
+        'otherInterest': body.otherInterest || '',
+        'developmentSelections': Array.isArray(body.developmentSelections) ? body.developmentSelections.join(', ') : '',
         'familiarity': body.experience?.familiarity || '',
         'excites': body.experience?.excites || '',
         'whyJoin': body.experience?.whyJoin || '',

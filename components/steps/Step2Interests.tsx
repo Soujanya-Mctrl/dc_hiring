@@ -1,32 +1,67 @@
 import React, { useState } from 'react';
 import { SectionHeader } from '../ui/SectionHeader';
+import { Input } from '../ui/Input';
 import { SelectCard } from '../ui/SelectCard';
-import { Calendar, FileText, Users, Code, PenTool, BookOpen, TrendingUp, Sparkles } from 'lucide-react';
+import { Calendar, FileText, Users, Code, PenTool, Sparkles } from 'lucide-react';
 
 const interestsList = [
   { id: 'events', title: 'Events', description: 'Meetups, hackathons, IRL gatherings', icon: <Calendar size={20} /> },
   { id: 'content', title: 'Content', description: 'Articles, videos, threads', icon: <FileText size={20} /> },
   { id: 'community', title: 'Community', description: 'Engage and support members', icon: <Users size={20} /> },
-  { id: 'development', title: 'Development', description: 'Tools, bots, dApps', icon: <Code size={20} /> },
+  { id: 'development', title: 'Development', description: 'Frontend, backend, APIs, systems, and more', icon: <Code size={20} /> },
   { id: 'design', title: 'Design', description: 'Visual identity and assets', icon: <PenTool size={20} /> },
-  { id: 'research', title: 'Research', description: 'Cover projects and ecosystem news', icon: <BookOpen size={20} /> },
-  { id: 'growth', title: 'Growth', description: 'Marketing and social campaigns', icon: <TrendingUp size={20} /> },
   { id: 'other', title: 'Something else', description: 'Tell us in the field below', icon: <Sparkles size={20} /> },
 ];
 
 interface Step2InterestsProps {
   interests: string[];
   setInterests: (interests: string[]) => void;
+  otherInterest: string;
+  setOtherInterest: (value: string) => void;
+  developmentSelections: string[];
+  setDevelopmentSelections: (value: string[]) => void;
   onValidate?: (isValid: boolean) => void;
 }
 
-export function Step2Interests({ interests, setInterests, onValidate }: Step2InterestsProps) {
+const developmentOptions = [
+  'Frontend',
+  'Backend',
+  'Full Stack',
+  'Mobile',
+  'DevOps',
+  'AI / ML',
+  'Blockchain',
+  'System Design',
+  'Cybersecurity',
+  'Cloud Computing',
+];
+
+export function Step2Interests({
+  interests,
+  setInterests,
+  otherInterest,
+  setOtherInterest,
+  developmentSelections,
+  setDevelopmentSelections,
+  onValidate,
+}: Step2InterestsProps) {
   const [error, setError] = useState('');
 
   const toggleSelection = (id: string) => {
-    setInterests(
-      interests.includes(id) ? interests.filter(item => item !== id) : [...interests, id]
-    );
+    const nextInterests = interests.includes(id)
+      ? interests.filter(item => item !== id)
+      : [...interests, id];
+
+    setInterests(nextInterests);
+
+    if (id === 'other' && !nextInterests.includes('other')) {
+      setOtherInterest('');
+    }
+
+    if (id === 'development' && !nextInterests.includes('development')) {
+      setDevelopmentSelections([]);
+    }
+
     // Clear error when user makes a selection
     if (error) {
       setError('');
@@ -39,6 +74,25 @@ export function Step2Interests({ interests, setInterests, onValidate }: Step2Int
       onValidate?.(false);
       return false;
     }
+
+    if (interests.includes('other') && !otherInterest.trim()) {
+      setError('Please describe what you would like to do');
+      onValidate?.(false);
+      return false;
+    }
+
+    if (interests.includes('development') && developmentSelections.length === 0) {
+      setError('Please select at least one type of development');
+      onValidate?.(false);
+      return false;
+    }
+
+    if (developmentSelections.length > 3) {
+      setError('Please select up to 3 types of development');
+      onValidate?.(false);
+      return false;
+    }
+
     setError('');
     onValidate?.(true);
     return true;
@@ -46,7 +100,7 @@ export function Step2Interests({ interests, setInterests, onValidate }: Step2Int
 
   React.useEffect(() => {
     (window as any).__step2Validate = validate;
-  }, [interests, error]);
+  }, [interests, error, developmentSelections]);
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -76,6 +130,75 @@ export function Step2Interests({ interests, setInterests, onValidate }: Step2Int
             />
           ))}
         </div>
+
+        {interests.includes('other') && (
+          <div className="mt-6">
+            <Input
+              label="Describe what else you'd like to do"
+              isRequired
+              placeholder="Tell us your idea"
+              value={otherInterest}
+              onChange={(e) => setOtherInterest((e.target as HTMLInputElement).value)}
+              error={error && !otherInterest.trim() ? error : undefined}
+            />
+          </div>
+        )}
+
+        {interests.includes('development') && (
+          <div className="mt-6">
+            <div className="mb-3 text-sm font-bold text-white">
+              What type of development? <span className="text-[#A3A3A3] font-normal">(Choose up to 3)</span> <span className="text-[#00C652]">*</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {developmentOptions.map((type) => {
+                const isSelected = developmentSelections.includes(type);
+
+                return (
+                <label
+                  key={type}
+                  className={`flex items-center gap-3 rounded-xl border px-4 py-3 cursor-pointer transition-colors ${isSelected
+                    ? 'border-[#00C652] bg-[#00C652]/5'
+                    : 'border-[#262626] bg-[#1A1A1A] hover:border-[#00C652]/50'
+                    }`}
+                >
+                  <input
+                    type="checkbox"
+                    name="developmentSelections"
+                    value={type}
+                    checked={isSelected}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      const nextSelections = checked
+                        ? [...developmentSelections, e.target.value]
+                        : developmentSelections.filter((item) => item !== e.target.value);
+
+                      if (checked && developmentSelections.length >= 3) {
+                        setError('Please select up to 3 types of development');
+                        onValidate?.(false);
+                        return;
+                      }
+
+                      setDevelopmentSelections(nextSelections);
+                      if (error) setError('');
+                    }}
+                    className="h-4 w-4 accent-[#00C652]"
+                  />
+                  <span className="text-sm text-white">{type}</span>
+                </label>
+                );
+              })}
+            </div>
+            <p className="mt-3 text-sm text-[#A3A3A3]">
+              It&apos;s okay if you&apos;re still learning (or want ton learn)— we would be happy to help you grow.
+            </p>
+            {error && interests.includes('development') && developmentSelections.length === 0 && (
+              <span className="mt-2 block text-xs text-red-500">{error}</span>
+            )}
+            {error && developmentSelections.length > 3 && (
+              <span className="mt-2 block text-xs text-red-500">{error}</span>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

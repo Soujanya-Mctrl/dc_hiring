@@ -6,7 +6,7 @@ import { Sparkles, Compass, Hammer, Flame } from 'lucide-react';
 
 const familiarityList = [
   { id: 'beginner', title: 'Beginner', description: 'Just getting started', icon: <Sparkles size={20} /> },
-  { id: 'familiar', title: 'Familiar', description: 'Used or explored Dev Community', icon: <Compass size={20} /> },
+  { id: 'familiar', title: 'Familiar', description: 'Make hobby projects', icon: <Compass size={20} /> },
   { id: 'builder', title: 'Builder', description: 'Actively building or contributing', icon: <Hammer size={20} /> },
   { id: 'deep', title: 'Deep Contributor', description: 'Highly active in ecosystem', icon: <Flame size={20} /> },
 ];
@@ -71,7 +71,7 @@ export function Step3Experience({ experience, setExperience, onValidate }: Step3
       <div className="bg-[#141414] border border-[#262626] rounded-3xl p-8 shadow-xl shadow-black/50 flex flex-col gap-10">
 
         <div>
-          <SectionHeader title="Familiarity with Dev Community" />
+          <SectionHeader title="Familiarity with Development" />
           {errors.familiarity && <div className="mb-3 p-2 bg-red-500/10 border border-red-500 rounded text-red-500 text-xs">{errors.familiarity}</div>}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {familiarityList.map((item) => (
@@ -90,7 +90,7 @@ export function Step3Experience({ experience, setExperience, onValidate }: Step3
 
         <div>
           <SectionHeader
-            title="What excites you about Dev Community or blockchain technology right now?"
+            title="What excites you about development right now?"
             subtitle="A project, technology, community, or idea — anything goes."
           />
           <Textarea

@@ -14,13 +14,15 @@ import toast from 'react-hot-toast';
 export default function Home() {
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 4;
+  const [isHydrated, setIsHydrated] = useState(false);
+  const storageKey = 'dc-hiring-form-state';
 
   // Form state
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
-    country: '',
-    city: '',
+    location: '',
+    accommodation: '',
     twitter: '',
     discord: '',
     linkedin: '',
@@ -28,6 +30,8 @@ export default function Home() {
   });
 
   const [interests, setInterests] = useState<string[]>([]);
+  const [otherInterest, setOtherInterest] = useState('');
+  const [developmentSelections, setDevelopmentSelections] = useState<string[]>([]);
 
   const [experience, setExperience] = useState({
     familiarity: '',
@@ -41,8 +45,53 @@ export default function Home() {
   });
 
   useEffect(() => {
+    const savedState = window.localStorage.getItem(storageKey);
+
+    if (savedState) {
+      try {
+        const parsed = JSON.parse(savedState);
+
+        if (typeof parsed.currentStep === 'number') setCurrentStep(parsed.currentStep);
+        if (parsed.formData) setFormData(parsed.formData);
+        if (Array.isArray(parsed.interests)) setInterests(parsed.interests);
+        if (typeof parsed.otherInterest === 'string') setOtherInterest(parsed.otherInterest);
+        if (Array.isArray(parsed.developmentSelections)) {
+          setDevelopmentSelections(parsed.developmentSelections);
+        } else if (typeof parsed.developmentType === 'string' && parsed.developmentType) {
+          setDevelopmentSelections([parsed.developmentType]);
+        }
+        if (parsed.experience) setExperience(parsed.experience);
+        if (parsed.contribution) setContribution(parsed.contribution);
+      } catch (error) {
+        console.warn('Failed to restore saved form state:', error);
+      }
+    }
+
+    setIsHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+
+    window.localStorage.setItem(
+      storageKey,
+      JSON.stringify({
+        currentStep,
+        formData,
+        interests,
+        otherInterest,
+        developmentSelections,
+        experience,
+        contribution,
+      })
+    );
+  }, [isHydrated, currentStep, formData, interests, otherInterest, developmentSelections, experience, contribution]);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [currentStep]);
+  }, [currentStep, isHydrated]);
 
   const handleNext = async () => {
     // Validate current step before proceeding
@@ -63,6 +112,8 @@ export default function Home() {
         body: JSON.stringify({
           ...formData,
           interests,
+          otherInterest,
+          developmentSelections,
           experience,
           contribution,
         }),
@@ -105,7 +156,16 @@ export default function Home() {
         {/* Current Step Content */}
         <div className="flex-1">
           {currentStep === 1 && <Step1About formData={formData} setFormData={setFormData} />}
-          {currentStep === 2 && <Step2Interests interests={interests} setInterests={setInterests} />}
+          {currentStep === 2 && (
+            <Step2Interests
+              interests={interests}
+              setInterests={setInterests}
+              otherInterest={otherInterest}
+              setOtherInterest={setOtherInterest}
+              developmentSelections={developmentSelections}
+              setDevelopmentSelections={setDevelopmentSelections}
+            />
+          )}
           {currentStep === 3 && <Step3Experience experience={experience} setExperience={setExperience} />}
           {currentStep === 4 && <Step4Contribution contribution={contribution} setContribution={setContribution} />}
         </div>
