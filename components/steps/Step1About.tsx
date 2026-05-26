@@ -12,6 +12,8 @@ interface Step1AboutProps {
     discord: string;
     linkedin: string;
     github: string;
+    resumeFilename: string;
+    resumeBase64: string;
   };
   setFormData: (data: any) => void;
   onValidate?: (isValid: boolean) => void;
