@@ -11,6 +11,9 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Dev Community",
   description: "Apply to join the Dev Community - A global network of innovators pushing Dev Community forward",
+  icons: {
+    icon: "/dcLogo.webp",
+  },
 };
 
 export default function RootLayout({

@@ -32,13 +32,12 @@ export function AnimatedTitleWord() {
           transition={{ duration: 0.5, ease: "easeInOut" }}
           className="col-start-1 row-start-1"
         >
-          {words[index]}
+          <span className="opacity-100 col-start-1 row-start-1 pointer-events-none" aria-hidden="true">
+        {words[index]}
+      </span>
         </motion.span>
       </AnimatePresence>
-      {/* Invisible element to reserve space based on the longest word so the layout doesn't jump */}
-      <span className="opacity-0 col-start-1 row-start-1 pointer-events-none" aria-hidden="true">
-        Innovators
-      </span>
+
     </span>
   );
 }

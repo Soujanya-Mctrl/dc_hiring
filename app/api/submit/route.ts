@@ -6,75 +6,179 @@ import nodemailer from 'nodemailer';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
+    console.log('🚀 [SUBMIT API] Request received');
+    console.log('📋 Full request body structure:');
+    console.log(JSON.stringify(body, null, 2));
+    
+    // Check environment variables FIRST
+    console.log('🔐 [SUBMIT API] Checking environment variables...');
+    const missingVars = [];
+    if (!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL) missingVars.push('GOOGLE_SERVICE_ACCOUNT_EMAIL');
+    if (!process.env.GOOGLE_PRIVATE_KEY) missingVars.push('GOOGLE_PRIVATE_KEY');
+    if (!process.env.GOOGLE_SHEET_ID) missingVars.push('GOOGLE_SHEET_ID');
+    
+    if (missingVars.length > 0) {
+      console.error('❌ Missing environment variables:', missingVars);
+      return NextResponse.json(
+        { error: 'Server configuration error', details: `Missing: ${missingVars.join(', ')}` },
+        { status: 500 }
+      );
+    }
+    console.log('✅ All environment variables present');
+    
+    console.log('📝 Request data:', {
+      fullName: body.fullName,
+      email: body.email,
+      country: body.country,
+      hasInterests: !!body.interests,
+      interestCount: body.interests?.length,
+    });
+    
+    // Validate required fields
+    if (!body.fullName || !body.email || !body.country) {
+      console.warn('❌ Validation failed: Missing required fields');
+      return NextResponse.json(
+        { error: 'Missing required fields: fullName, email, country' },
+        { status: 400 }
+      );
+    }
+    
+    console.log('✅ Basic validation passed');
     
     // 1. Initialize auth
+    console.log('🔐 Initializing JWT authentication...');
     const serviceAccountAuth = new JWT({
-      email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-      key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+      email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL!,
+      key: process.env.GOOGLE_PRIVATE_KEY!.replace(/\\n/g, '\n'),
       scopes: [
         'https://www.googleapis.com/auth/spreadsheets',
       ],
     });
-
-    if (!process.env.GOOGLE_SHEET_ID) {
-        return NextResponse.json(
-            { error: 'Google Sheet ID is not configured.' },
-            { status: 500 }
-        );
-    }
+    console.log('✅ JWT auth initialized');
 
     // 2. Initialize the document
-    const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEET_ID, serviceAccountAuth);
+    console.log('📄 Initializing Google Spreadsheet with ID:', process.env.GOOGLE_SHEET_ID);
+    const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEET_ID!, serviceAccountAuth);
     
     // 3. Load doc info
     await doc.loadInfo();
+    console.log('📄 Spreadsheet loaded. Title:', doc.title);
+    console.log('📄 Total sheets in this spreadsheet:', doc.sheetsByIndex.length);
+    doc.sheetsByIndex.forEach((s: any, idx: number) => {
+      console.log(`  Sheet ${idx}: "${s.title}" (${s.rowCount} rows)`);
+    });
     
-    // 4. Get the first sheet
-    const sheet = doc.sheetsByIndex[0];
+    // 4. Get the first sheet or create one if it does not exist yet
+    let sheet = doc.sheetsByIndex[0];
+    if (!sheet) {
+      console.warn('⚠️ No worksheet found, creating Responses sheet...');
+      sheet = await doc.addSheet({ title: 'Responses' });
+      console.log('✅ Worksheet created');
+      await doc.loadInfo();
+    }
+    console.log('📊 Using sheet:', sheet.title);
+    console.log('📊 Sheet ID:', sheet.sheetId);
+    console.log('📊 Current row count:', sheet.rowCount);
+
+    // 5. Set up headers if they don't exist yet
+    const headerRow = [
+        'fullName',
+        'email',
+        'country',
+        'city',
+        'discord',
+        'twitter',
+        'interests',
+        'familiarity',
+        'excites',
+        'whyJoin',
+        'proud',
+        'timeCommit',
+    ];
     
-    // 5. Append the row
-    // We map the incoming JSON body to columns. 
-    // This assumes the sheet has headers matching these keys, or we just append values in order.
-    // Ensure your Google Sheet has headers like "Name", "Email", "About", "Interests", "Experience", "Contribution"
-    
-    const newRow = {
-        Timestamp: new Date().toISOString(),
-        About: body.about || '',
-        Interests: body.interests ? body.interests.join(', ') : '',
-        Experience: body.experience || '',
-        Contribution: body.contribution || '',
-        // You can add more fields here if the form sends them
-        Name: body.name || '',
-        Email: body.email || '',
-    };
+    let headersLoaded = false;
 
-    await sheet.addRow(newRow);
-
-    // 6. Send confirmation email
-    if (body.email) {
-        const transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST || 'smtp.gmail.com',
-            port: parseInt(process.env.SMTP_PORT || '587'),
-            secure: process.env.SMTP_PORT === '465',
-            auth: {
-                user: process.env.SMTP_USER,
-                pass: process.env.SMTP_PASS,
-            },
-        });
-
-        await transporter.sendMail({
-            from: `"Hiring Team" <${process.env.SMTP_USER}>`,
-            to: body.email,
-            subject: 'Interview Confirmation',
-            text: 'Look forward to your interview and your slot will be sent in due time.',
-            html: '<p>Look forward to your interview and your slot will be sent in due time.</p>',
-        });
+    try {
+      await sheet.loadHeaderRow();
+      headersLoaded = true;
+      console.log('📊 Current headers:', sheet.headerValues);
+    } catch (headerError: any) {
+      console.warn('⚠️ Header row not loaded yet:', headerError.message);
     }
 
+    if (!headersLoaded || !sheet.headerValues || sheet.headerValues.length === 0) {
+      console.log('📝 No headers found, setting headers now...');
+        await sheet.setHeaderRow(headerRow);
+        console.log('✅ Headers set successfully');
+        // Reload after setting headers
+        await sheet.loadHeaderRow();
+      console.log('📊 Reloaded headers:', sheet.headerValues);
+    } else {
+        console.log('✅ Headers already exist');
+    }
+
+    console.log('📊 Final headers:', sheet.headerValues);
+    
+    // 7. Prepare and append the row with all fields
+    const newRow = {
+        'fullName': body.fullName || '',
+        'email': body.email || '',
+        'country': body.country || '',
+        'city': body.city || '',
+        'discord': body.discord || '',
+        'twitter': body.twitter || '',
+        'interests': body.interests ? body.interests.join(', ') : '',
+        'familiarity': body.experience?.familiarity || '',
+        'excites': body.experience?.excites || '',
+        'whyJoin': body.experience?.whyJoin || '',
+        'proud': body.contribution?.proud || '',
+        'timeCommit': body.contribution?.timeCommit || '',
+    };
+
+    console.log('📤 Adding row with data:', Object.keys(newRow));
+    console.log('📤 Row data:', newRow);
+    
+    // addRow is the correct method in google-spreadsheet. If insert: true is needed, we can try it.
+    const addedRow = await sheet.addRow(newRow);
+    console.log(`✅ Row added successfully to row index: ${addedRow.rowNumber}`);
+    
+    // Read back the last few rows to verify where the data went
+    const rows = await sheet.getRows({ limit: 5, offset: Math.max(0, addedRow.rowNumber - 5) });
+    console.log('🔄 Data verification - recent rows content:', rows.map(r => r.toObject()));
+
+    // 8. Send confirmation email
+    if (body.email) {
+        console.log('📧 Attempting to send confirmation email...');
+        try {
+            const transporter = nodemailer.createTransport({
+                host: process.env.SMTP_HOST || 'smtp.gmail.com',
+                port: parseInt(process.env.SMTP_PORT || '587'),
+                secure: process.env.SMTP_PORT === '465',
+                auth: {
+                    user: process.env.SMTP_USER,
+                    pass: process.env.SMTP_PASS,
+                },
+            });
+
+            await transporter.sendMail({
+                from: `"Hiring Team" <${process.env.SMTP_USER}>`,
+                to: body.email,
+                subject: 'Interview Confirmation',
+                text: 'Look forward to your interview and your slot will be sent in due time.',
+                html: '<p>Look forward to your interview and your slot will be sent in due time.</p>',
+            });
+            console.log('✅ Email sent successfully');
+        } catch (emailError: any) {
+            console.warn('⚠️ Email failed (continuing anyway):', emailError.message);
+        }
+    }
+
+    console.log('🎉 Application submitted successfully!');
     return NextResponse.json({ success: true, message: 'Data saved successfully' }, { status: 200 });
 
   } catch (error: any) {
-    console.error('Error saving to Google Sheets:', error);
+    console.error('❌ ERROR in submit API:', error.message);
+    console.error('Stack trace:', error.stack);
     return NextResponse.json(
       { error: 'Failed to save data', details: error.message },
       { status: 500 }

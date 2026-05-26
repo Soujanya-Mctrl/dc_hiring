@@ -14,14 +14,39 @@ const interestsList = [
   { id: 'other', title: 'Something else', description: 'Tell us in the field below', icon: <Sparkles size={20} /> },
 ];
 
-export function Step2Interests() {
-  const [selected, setSelected] = useState<string[]>([]);
+interface Step2InterestsProps {
+  interests: string[];
+  setInterests: (interests: string[]) => void;
+  onValidate?: (isValid: boolean) => void;
+}
+
+export function Step2Interests({ interests, setInterests, onValidate }: Step2InterestsProps) {
+  const [error, setError] = useState('');
 
   const toggleSelection = (id: string) => {
-    setSelected(prev => 
-      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+    setInterests(
+      interests.includes(id) ? interests.filter(item => item !== id) : [...interests, id]
     );
+    // Clear error when user makes a selection
+    if (error) {
+      setError('');
+    }
   };
+
+  const validate = () => {
+    if (interests.length === 0) {
+      setError('Please select at least one interest');
+      onValidate?.(false);
+      return false;
+    }
+    setError('');
+    onValidate?.(true);
+    return true;
+  };
+
+  React.useEffect(() => {
+    (window as any).__step2Validate = validate;
+  }, [interests, error]);
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -31,11 +56,13 @@ export function Step2Interests() {
       </div>
 
       <div className="bg-[#141414] border border-[#262626] rounded-3xl p-8 shadow-xl shadow-black/50">
-        <SectionHeader 
-          title="What you&apos;d like to do" 
+        <SectionHeader
+          title="What you&apos;d like to do"
           subtitle="Pick as many as you want — nothing is locked in."
         />
-        
+
+        {error && <div className="mb-4 p-3 bg-red-500/10 border border-red-500 rounded-lg text-red-500 text-sm">{error}</div>}
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {interestsList.map((interest) => (
             <SelectCard
@@ -43,7 +70,7 @@ export function Step2Interests() {
               title={interest.title}
               description={interest.description}
               icon={interest.icon}
-              selected={selected.includes(interest.id)}
+              selected={interests.includes(interest.id)}
               onClick={() => toggleSelection(interest.id)}
               type="checkbox"
             />
