@@ -23,6 +23,8 @@ export default function Home() {
     city: '',
     twitter: '',
     discord: '',
+    linkedin: '',
+    github: '',
   });
 
   const [interests, setInterests] = useState<string[]>([]);
