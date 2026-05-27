@@ -2,8 +2,6 @@ import { NextResponse } from 'next/server';
 import { GoogleSpreadsheet } from 'google-spreadsheet';
 import { JWT } from 'google-auth-library';
 import nodemailer from 'nodemailer';
-import { google } from 'googleapis';
-import { Readable } from 'stream';
 
 export async function POST(request: Request) {
   try {
@@ -153,25 +151,46 @@ export async function POST(request: Request) {
           scopes: ['https://www.googleapis.com/auth/drive.file', 'https://www.googleapis.com/auth/drive.metadata'],
         });
 
-        const drive = google.drive({ version: 'v3', auth: driveAuth as any });
+        const { access_token } = await driveAuth.authorize();
+        if (!access_token) {
+          throw new Error('Unable to acquire Google Drive access token');
+        }
+
         const buffer = Buffer.from(body.resumeBase64, 'base64');
 
-        const media = {
-          mimeType: 'application/pdf',
-          body: Readable.from(buffer),
-        } as any;
+        const boundary = 'dc-hiring-resume-upload-boundary';
+        const metadata = {
+          name: body.resumeFilename,
+          parents: process.env.DRIVE_FOLDER_ID ? [process.env.DRIVE_FOLDER_ID] : undefined,
+        };
 
-        const createRes = await drive.files.create({
-          requestBody: {
-            name: body.resumeFilename,
-            parents: process.env.DRIVE_FOLDER_ID ? [process.env.DRIVE_FOLDER_ID] : undefined,
-          },
-          media,
-          fields: 'id, name, webViewLink, webContentLink',
-        });
+        const multipartBody = Buffer.concat([
+          Buffer.from(`--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n`),
+          Buffer.from(JSON.stringify(metadata)),
+          Buffer.from(`\r\n--${boundary}\r\nContent-Type: application/pdf\r\n\r\n`),
+          buffer,
+          Buffer.from(`\r\n--${boundary}--`),
+        ]);
 
-        resumeFileId = createRes.data.id || '';
-        resumeLink = (createRes.data as any).webViewLink || (createRes.data as any).webContentLink || '';
+        const uploadResponse = await fetch(
+          'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink,webContentLink',
+          {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${access_token}`,
+              'Content-Type': `multipart/related; boundary=${boundary}`,
+            },
+            body: multipartBody,
+          }
+        );
+
+        if (!uploadResponse.ok) {
+          throw new Error(`Drive upload failed: ${uploadResponse.status} ${await uploadResponse.text()}`);
+        }
+
+        const createRes = await uploadResponse.json();
+        resumeFileId = createRes.id || '';
+        resumeLink = createRes.webViewLink || createRes.webContentLink || '';
         console.log('✅ Resume uploaded to Drive:', resumeFileId, resumeLink);
       } catch (driveError: any) {
         console.warn('⚠️ Drive upload failed (continuing):', driveError.message);
