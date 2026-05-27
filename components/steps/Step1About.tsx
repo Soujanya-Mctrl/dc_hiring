@@ -260,7 +260,7 @@ export function Step1About({ formData, setFormData, onValidate }: Step1AboutProp
             <button
               type="button"
               onClick={() => (fileInputRef.current && fileInputRef.current.click())}
-              className={`px-4 py-2 rounded-lg bg-[#1A1A1A] text-sm text-white hover:border-[#00C652] transition-colors ${resumeError ? 'border-red-500' : 'border-[#262626]'}`}
+              className={`px-4 py-2 rounded-lg bg-[#1A1A1A] cursor-pointer text-sm text-white hover:border-[#00C652] transition-colors ${resumeError ? 'border-red-500' : 'border-[#262626]'}`}
             >
               Choose file
             </button>
