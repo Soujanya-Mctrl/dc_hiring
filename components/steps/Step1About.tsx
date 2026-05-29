@@ -12,6 +12,8 @@ interface Step1AboutProps {
     discord: string;
     linkedin: string;
     github: string;
+    resumeFilename?: string;
+    resumeBase64?: string;
   };
   setFormData: (data: any) => void;
   onValidate?: (isValid: boolean) => void;
@@ -146,10 +148,15 @@ export function Step1About({ formData, setFormData, onValidate }: Step1AboutProp
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="mb-12">
         <h2 className="text-3xl font-black text-white mb-2">Apply to join Dev Community</h2>
-        <p className="text-[#A3A3A3]">How should we reach you, and where can we find you online.</p>
+        <p className="text-text-secondary">How should we reach you, and where can we find you online.</p>
       </div>
 
-      <div className="bg-[#141414] border border-[#262626] rounded-3xl p-8 shadow-xl shadow-black/50">
+      <div className="bg-surface border border-border rounded-none p-8 shadow-xl shadow-black/50 relative overflow-hidden group">
+        {/* Bracket Corners (Cyberpunk Motif) */}
+        <span className="absolute top-0 left-0 w-3 h-3 border-t border-l border-white/10 transition-all duration-300 group-hover:border-accent group-hover:w-4 group-hover:h-4" />
+        <span className="absolute top-0 right-0 w-3 h-3 border-t border-r border-white/10 transition-all duration-300 group-hover:border-accent group-hover:w-4 group-hover:h-4" />
+        <span className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-white/10 transition-all duration-300 group-hover:border-accent group-hover:w-4 group-hover:h-4" />
+        <span className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-white/10 transition-all duration-300 group-hover:border-accent group-hover:w-4 group-hover:h-4" />
 
         {/* Personal info */}
         <SectionHeader title="Personal info" />
@@ -189,11 +196,11 @@ export function Step1About({ formData, setFormData, onValidate }: Step1AboutProp
           />
           <div className="flex flex-col gap-2 w-full">
             <label className="text-sm font-bold text-white">
-              Accommodation <span className="text-[#00C652]">*</span>
+              Accommodation <span className="text-accent">*</span>
             </label>
             <div className="relative">
               <select
-                className={`w-full bg-[#1A1A1A] border rounded-xl px-4 py-3.5 focus:outline-none transition-colors ${formData.accommodation ? 'text-white' : 'text-[#737373]'} ${errors.accommodation ? 'border-red-500 focus:border-red-500' : 'border-[#262626] focus:border-[#00C652]'}`}
+                className={`w-full bg-input border rounded-lg px-4 py-3.5 focus:outline-none transition-colors ${formData.accommodation ? 'text-white' : 'text-text-muted'} ${errors.accommodation ? 'border-red-500 focus:border-red-500' : 'border-border focus:border-accent'}`}
                 value={formData.accommodation}
                 onChange={(e) => handleChange('accommodation', e.target.value)}
                 required
@@ -253,21 +260,21 @@ export function Step1About({ formData, setFormData, onValidate }: Step1AboutProp
 
         {/* Resume upload */}
         <div className="mt-6">
-          <label className="text-sm font-bold text-white block mb-2">Upload resume (PDF, max 3 MB) <span className="text-[#00C652]">*</span></label>
+          <label className="text-sm font-bold text-white block mb-2">Upload resume (PDF, max 3 MB) <span className="text-accent">*</span></label>
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => (fileInputRef.current && fileInputRef.current.click())}
-              className={`px-4 py-2 rounded-lg bg-[#1A1A1A] text-sm text-white hover:border-[#00C652] transition-colors ${resumeError ? 'border-red-500' : 'border-[#262626]'}`}
+              className={`px-4 py-2 rounded-lg bg-input text-sm text-white hover:border-accent border transition-colors ${resumeError ? 'border-red-500' : 'border-border'}`}
             >
               Choose file
             </button>
-            <span className="text-sm text-[#A3A3A3]">{formData.resumeFilename || 'No file chosen'}</span>
+            <span className="text-sm text-text-secondary">{formData.resumeFilename || 'No file chosen'}</span>
             {formData.resumeFilename && (
               <button
                 type="button"
                 onClick={handleRemoveResume}
-                className="px-3 py-1 rounded-md bg-transparent border border-[#3a3a3a] text-sm text-[#A3A3A3] hover:border-red-500 hover:text-red-500 transition-colors"
+                className="px-3 py-1 rounded-md bg-transparent border border-border text-sm text-text-secondary hover:border-red-500 hover:text-red-500 transition-colors"
               >
                 Remove
               </button>

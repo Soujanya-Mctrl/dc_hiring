@@ -12,18 +12,18 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="flex flex-col gap-2 w-full">
         <label className="text-sm font-bold text-white">
-          {label} {isRequired && <span className="text-[#00C652]">*</span>}
+          {label} {isRequired && <span className="text-accent">*</span>}
         </label>
         <div className="relative">
           {icon && (
-            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#737373]">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted">
               {icon}
             </div>
           )}
           <input
             ref={ref}
-            className={`w-full bg-[#1A1A1A] border rounded-xl px-4 py-3.5 text-white placeholder:text-[#737373] focus:outline-none transition-colors ${icon ? 'pl-11' : ''
-              } ${error ? 'border-red-500 focus:border-red-500' : 'border-[#262626] focus:border-[#00C652]'} ${className}`}
+            className={`w-full bg-input border rounded-lg px-4 py-3.5 text-white placeholder:text-text-muted focus:outline-none transition-colors ${icon ? 'pl-11' : ''
+              } ${error ? 'border-red-500 focus:border-red-500' : 'border-border focus:border-accent'} ${className}`}
             {...props}
           />
         </div>
@@ -49,17 +49,17 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
       <div className="flex flex-col gap-2 w-full">
         {label && (
           <label className="text-sm font-bold text-white">
-            {label} {isRequired && <span className="text-[#00C652]">*</span>}
+            {label} {isRequired && <span className="text-accent">*</span>}
           </label>
         )}
         <div className="relative">
           <textarea
             ref={ref}
-            className={`w-full bg-[#1A1A1A] border rounded-xl px-4 py-3.5 text-white placeholder:text-[#737373] focus:outline-none transition-colors resize-y min-h-[120px] ${error ? 'border-red-500 focus:border-red-500' : 'border-[#262626] focus:border-[#00C652]'} ${className}`}
+            className={`w-full bg-input border rounded-lg px-4 py-3.5 text-white placeholder:text-text-muted focus:outline-none transition-colors resize-y min-h-[120px] ${error ? 'border-red-500 focus:border-red-500' : 'border-border focus:border-accent'} ${className}`}
             {...props}
           />
           {minChars !== undefined && (
-            <div className={`text-right text-xs mt-1 font-semibold ${currentChars && currentChars >= minChars ? 'text-[#00C652]' : 'text-[#737373]'
+            <div className={`text-right text-xs mt-1 font-semibold ${currentChars && currentChars >= minChars ? 'text-accent' : 'text-text-muted'
               }`}>
               {currentChars || 0} / {minChars} characters min
             </div>

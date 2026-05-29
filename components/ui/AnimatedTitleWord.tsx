@@ -17,7 +17,7 @@ export function AnimatedTitleWord() {
 
   return (
     <span 
-      className="text-[#00C652] inline-grid overflow-hidden align-bottom"
+      className="text-accent inline-grid overflow-hidden align-bottom"
       style={{
         maskImage: 'linear-gradient(to bottom, transparent, black 15%, black 85%, transparent)',
         WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 15%, black 85%, transparent)'

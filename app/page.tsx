@@ -181,7 +181,7 @@ export default function Home() {
         </div>
 
         {/* Bottom Navigation Buttons */}
-        <div className="flex items-center justify-between mt-12 pt-8 border-t border-[#262626]">
+        <div className="flex items-center justify-between mt-12 pt-8 border-t border-border">
           {currentStep > 1 ? (
             <Button
               variant="ghost"

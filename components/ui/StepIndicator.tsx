@@ -34,8 +34,8 @@ export function StepIndicator({ currentStep }: StepIndicatorProps) {
                 <div 
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors
                     ${(isActive || isCompleted) 
-                      ? 'bg-[#00C652] text-white border-2 border-[#00C652]' 
-                      : 'bg-transparent text-[#737373] border-2 border-[#262626]'
+                      ? 'bg-accent text-white border-2 border-accent' 
+                      : 'bg-transparent text-text-muted border-2 border-border'
                     }
                   `}
                 >
@@ -43,7 +43,7 @@ export function StepIndicator({ currentStep }: StepIndicatorProps) {
                 </div>
                 <span 
                   className={`text-sm font-semibold hidden sm:block
-                    ${(isActive || isCompleted) ? 'text-white' : 'text-[#737373]'}
+                    ${(isActive || isCompleted) ? 'text-white' : 'text-text-muted'}
                   `}
                 >
                   {step.label}
@@ -52,9 +52,9 @@ export function StepIndicator({ currentStep }: StepIndicatorProps) {
 
               {/* Connector Line (except for last item) */}
               {index < steps.length - 1 && (
-                <div className="flex-1 mx-4 h-px bg-[#262626]">
+                <div className="flex-1 mx-4 h-px bg-border">
                   <div 
-                    className="h-full bg-[#00C652] transition-all duration-300"
+                    className="h-full bg-accent transition-all duration-300"
                     style={{ width: step.id < currentStep ? '100%' : '0%' }}
                   />
                 </div>
@@ -65,7 +65,7 @@ export function StepIndicator({ currentStep }: StepIndicatorProps) {
       </div>
 
       <div className="mt-6 pl-1 text-left sm:hidden">
-        <p className="text-sm font-medium text-[#A3A3A3]">
+        <p className="text-sm font-medium text-text-secondary">
           Step {currentStep} of {steps.length}: {activeStep?.label}
         </p>
       </div>

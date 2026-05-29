@@ -106,10 +106,16 @@ export function Step2Interests({
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="mb-12">
         <h2 className="text-3xl font-black text-white mb-2">What would you like to contribute?</h2>
-        <p className="text-[#A3A3A3]">Pick wherever you&apos;d like to show up. You can do as many as you want.</p>
+        <p className="text-text-secondary">Pick wherever you&apos;d like to show up. You can do as many as you want.</p>
       </div>
 
-      <div className="bg-[#141414] border border-[#262626] rounded-3xl p-8 shadow-xl shadow-black/50">
+      <div className="bg-surface border border-border rounded-none p-8 shadow-xl shadow-black/50 relative overflow-hidden group">
+        {/* Bracket Corners (Cyberpunk Motif) */}
+        <span className="absolute top-0 left-0 w-3 h-3 border-t border-l border-white/10 transition-all duration-300 group-hover:border-accent group-hover:w-4 group-hover:h-4" />
+        <span className="absolute top-0 right-0 w-3 h-3 border-t border-r border-white/10 transition-all duration-300 group-hover:border-accent group-hover:w-4 group-hover:h-4" />
+        <span className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-white/10 transition-all duration-300 group-hover:border-accent group-hover:w-4 group-hover:h-4" />
+        <span className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-white/10 transition-all duration-300 group-hover:border-accent group-hover:w-4 group-hover:h-4" />
+
         <SectionHeader
           title="What you&apos;d like to do"
           subtitle="Pick as many as you want — nothing is locked in."
@@ -147,7 +153,7 @@ export function Step2Interests({
         {interests.includes('development') && (
           <div className="mt-6">
             <div className="mb-3 text-sm font-bold text-white">
-              What type of development? <span className="text-[#A3A3A3] font-normal">(Choose up to 3)</span> <span className="text-[#00C652]">*</span>
+              What type of development? <span className="text-text-secondary font-normal">(Choose up to 3)</span> <span className="text-accent">*</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {developmentOptions.map((type) => {
@@ -156,9 +162,9 @@ export function Step2Interests({
                 return (
                 <label
                   key={type}
-                  className={`flex items-center gap-3 rounded-xl border px-4 py-3 cursor-pointer transition-colors ${isSelected
-                    ? 'border-[#00C652] bg-[#00C652]/5'
-                    : 'border-[#262626] bg-[#1A1A1A] hover:border-[#00C652]/50'
+                  className={`flex items-center gap-3 rounded-lg border px-4 py-3 cursor-pointer transition-colors ${isSelected
+                    ? 'border-accent bg-accent/5'
+                    : 'border-border bg-input hover:border-accent/40'
                     }`}
                 >
                   <input
@@ -181,15 +187,15 @@ export function Step2Interests({
                       setDevelopmentSelections(nextSelections);
                       if (error) setError('');
                     }}
-                    className="h-4 w-4 accent-[#00C652]"
+                    className="h-4 w-4 accent-accent"
                   />
                   <span className="text-sm text-white">{type}</span>
                 </label>
                 );
               })}
             </div>
-            <p className="mt-3 text-sm text-[#A3A3A3]">
-              It&apos;s okay if you&apos;re still learning (or want ton learn)— we would be happy to help you grow.
+            <p className="mt-3 text-sm text-text-secondary">
+              It&apos;s okay if you&apos;re still learning (or want to learn)— we would be happy to help you grow.
             </p>
             {error && interests.includes('development') && developmentSelections.length === 0 && (
               <span className="mt-2 block text-xs text-red-500">{error}</span>

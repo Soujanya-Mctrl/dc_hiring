@@ -65,10 +65,15 @@ export function Step3Experience({ experience, setExperience, onValidate }: Step3
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="mb-12">
         <h2 className="text-3xl font-black text-white mb-2">Your Dev Community journey</h2>
-        <p className="text-[#A3A3A3]">No wrong answers — we welcome every level of familiarity.</p>
+        <p className="text-text-secondary">No wrong answers — we welcome every level of familiarity.</p>
       </div>
 
-      <div className="bg-[#141414] border border-[#262626] rounded-3xl p-8 shadow-xl shadow-black/50 flex flex-col gap-10">
+      <div className="bg-surface border border-border rounded-none p-8 shadow-xl shadow-black/50 relative overflow-hidden group flex flex-col gap-10">
+        {/* Bracket Corners (Cyberpunk Motif) */}
+        <span className="absolute top-0 left-0 w-3 h-3 border-t border-l border-white/10 transition-all duration-300 group-hover:border-accent group-hover:w-4 group-hover:h-4" />
+        <span className="absolute top-0 right-0 w-3 h-3 border-t border-r border-white/10 transition-all duration-300 group-hover:border-accent group-hover:w-4 group-hover:h-4" />
+        <span className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-white/10 transition-all duration-300 group-hover:border-accent group-hover:w-4 group-hover:h-4" />
+        <span className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-white/10 transition-all duration-300 group-hover:border-accent group-hover:w-4 group-hover:h-4" />
 
         <div>
           <SectionHeader title="Familiarity with Development" />
