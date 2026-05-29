@@ -30,6 +30,16 @@ const validateTwitterHandle = (twitter: string): boolean => {
   return twitterRegex.test(twitter);
 };
 
+const validateProfileUrl = (value: string, domains: string[]): boolean => {
+  try {
+    const normalized = value.startsWith('http://') || value.startsWith('https://') ? value : `https://${value}`;
+    const url = new URL(normalized);
+    return domains.some((domain) => url.hostname === domain || url.hostname.endsWith(`.${domain}`));
+  } catch {
+    return false;
+  }
+};
+
 const validateDiscordHandle = (discord: string): boolean => {
   // Discord username or username#discriminator format
   const discordRegex = /^[a-zA-Z0-9._-]{2,32}(#\d{4})?$/;
@@ -117,13 +127,13 @@ export function Step1About({ formData, setFormData, onValidate }: Step1AboutProp
 
     if (!formData.linkedin.trim()) {
       newErrors.linkedin = 'LinkedIn profile is required';
-    } else if (!validateTwitterHandle(formData.linkedin)) {
+    } else if (!validateProfileUrl(formData.linkedin, ['linkedin.com'])) {
       newErrors.linkedin = 'Please enter a valid LinkedIn profile URL';
     }
 
     if (!formData.github.trim()) {
       newErrors.github = 'GitHub profile is required';
-    } else if (!validateTwitterHandle(formData.github)) {
+    } else if (!validateProfileUrl(formData.github, ['github.com'])) {
       newErrors.github = 'Please enter a valid GitHub profile URL';
     }
 
@@ -250,7 +260,7 @@ export function Step1About({ formData, setFormData, onValidate }: Step1AboutProp
           <Input
             label="GitHub"
             isRequired
-            placeholder="https://github.com/username"   
+            placeholder="https://github.com/username"
             value={formData.github}
             onChange={(e) => handleChange('github', (e.target as HTMLInputElement).value)}
             error={errors.github}
@@ -265,7 +275,7 @@ export function Step1About({ formData, setFormData, onValidate }: Step1AboutProp
             <button
               type="button"
               onClick={() => (fileInputRef.current && fileInputRef.current.click())}
-              className={`px-4 py-2 rounded-lg bg-input text-sm text-white hover:border-accent border transition-colors ${resumeError ? 'border-red-500' : 'border-border'}`}
+              className={`px-4 py-2 rounded-lg bg-input cursor-pointer text-sm text-white hover:border-accent border transition-colors ${resumeError ? 'border-red-500' : 'border-border'}`}
             >
               Choose file
             </button>

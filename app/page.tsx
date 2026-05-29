@@ -27,7 +27,6 @@ export default function Home() {
     discord: '',
     linkedin: '',
     github: '',
-    // Resume fields
     resumeFilename: '',
     resumeBase64: '',
   });
